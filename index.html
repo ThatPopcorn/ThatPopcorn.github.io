@@ -1,1 +1,394 @@
+<!DOCTYPE html>
+<!--
+  barrow — single-page static site
+  ────────────────────────────────
+  BEFORE PUBLISHING, replace two placeholders:
+    1. REPO_URL          → your GitHub repository URL (search for "REPO_URL")
+    2. you@y782hd7….onion → the real .onion address in the hero command block
+  No build step. Commit this file to the root of a GitHub Pages repo and it works.
+  No external requests: system fonts only, no analytics, no CDNs, no images.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="barrow — anonymous, end-to-end-encrypted chat you SSH into, living inside a Tor onion service.">
+<meta name="color-scheme" content="dark">
+<title>barrow — what is buried cannot be read</title>
+<style>
+  /* ── tokens ─────────────────────────────────────────── */
+  :root {
+    --bg:        #0b0b0c;
+    --bg-raise:  #101012;
+    --bg-code:   #131316;
+    --fg:        #e6e6e6;
+    --muted:     #8a8a8a;
+    --faint:     #55555a;
+    --line:      #232327;
+    --accent:    #c2703d;          /* dim ember — the one accent */
+    --accent-hi: #d98a54;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    --max: 44rem;
+  }
 
+  /* ── reset / base ───────────────────────────────────── */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--mono);
+    font-size: 15px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    /* faint grain via layered radial dots — no images, no requests */
+    background-image: radial-gradient(rgba(255,255,255,0.015) 1px, transparent 1px);
+    background-size: 3px 3px;
+  }
+  ::selection { background: var(--accent); color: var(--bg); }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { color: var(--accent-hi); text-decoration: underline; text-underline-offset: 3px; }
+  a:focus-visible,
+  button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  .wrap { max-width: var(--max); margin: 0 auto; padding: 0 1.25rem; }
+
+  /* ── top bar ────────────────────────────────────────── */
+  header.top {
+    border-bottom: 1px solid var(--line);
+    position: sticky; top: 0;
+    background: rgba(11,11,12,0.92);
+    backdrop-filter: blur(4px);
+    z-index: 10;
+  }
+  .top-inner {
+    max-width: var(--max); margin: 0 auto; padding: 0.7rem 1.25rem;
+    display: flex; align-items: baseline; justify-content: space-between;
+  }
+  .brand { color: var(--fg); font-weight: 700; letter-spacing: 0.02em; }
+  .brand:hover { color: var(--fg); text-decoration: none; }
+  .brand .glyph { font-weight: 400; margin-right: 0.45rem; }
+  nav.links a { color: var(--muted); margin-left: 1.4rem; font-size: 0.86rem; }
+  nav.links a:hover { color: var(--accent-hi); }
+
+  /* ── hero ───────────────────────────────────────────── */
+  .hero { text-align: center; padding: 5.5rem 0 4.5rem; }
+  .hero .logo {
+    font-size: clamp(4.5rem, 14vw, 7rem);
+    line-height: 1;
+    display: block;
+    filter: grayscale(0.25);
+    text-shadow: 0 18px 60px rgba(194,112,61,0.18);
+  }
+  .hero h1 {
+    font-size: clamp(2rem, 6vw, 2.75rem);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    margin-top: 1.2rem;
+  }
+  .hero .epigraph {
+    font-style: italic;
+    color: var(--muted);
+    margin-top: 0.5rem;
+  }
+  .hero .tagline {
+    margin: 1.6rem auto 0;
+    max-width: 34rem;
+    font-weight: 700;
+    color: var(--fg);
+  }
+
+  /* command block */
+  .cmd {
+    position: relative;
+    margin: 2.2rem auto 0;
+    max-width: 36rem;
+    text-align: left;
+    background: var(--bg-code);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 1rem 3.2rem 1rem 1.1rem;
+    overflow-x: auto;
+  }
+  .cmd pre { font-family: inherit; font-size: 0.86rem; line-height: 1.8; }
+  .cmd .p { color: var(--accent); user-select: none; }
+  .cmd .copy {
+    position: absolute; top: 0.6rem; right: 0.6rem;
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    color: var(--muted);
+    font-family: inherit;
+    font-size: 0.72rem;
+    padding: 0.3rem 0.55rem;
+    cursor: pointer;
+  }
+  .cmd .copy:hover { color: var(--fg); border-color: var(--faint); }
+
+  .cta {
+    margin-top: 1.9rem;
+    display: flex; gap: 0.9rem; justify-content: center; flex-wrap: wrap;
+  }
+  .btn {
+    display: inline-block;
+    padding: 0.6rem 1.15rem;
+    border-radius: 4px;
+    font-size: 0.88rem;
+    border: 1px solid var(--line);
+  }
+  .btn.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 700; }
+  .btn.primary:hover { background: var(--accent-hi); border-color: var(--accent-hi); color: var(--bg); text-decoration: none; }
+  .btn.ghost { color: var(--fg); }
+  .btn.ghost:hover { border-color: var(--faint); color: var(--fg); text-decoration: none; }
+
+  /* ── sections ───────────────────────────────────────── */
+  section { padding: 3.4rem 0; border-top: 1px solid var(--line); }
+  h2 {
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1.6rem;
+  }
+  h2::before { content: "// "; color: var(--faint); }
+  p { color: var(--fg); }
+  .dim { color: var(--muted); }
+
+  /* pitch */
+  .pitch { display: grid; gap: 1.5rem; }
+  .pitch b { display: block; color: var(--fg); }
+  .pitch p { color: var(--muted); font-size: 0.92rem; }
+  @media (min-width: 640px) { .pitch { grid-template-columns: 1fr 1fr 1fr; gap: 2rem; } }
+
+  /* how it works */
+  #how p.lead { color: var(--fg); max-width: 42rem; }
+  ol.steps {
+    margin: 1.8rem 0;
+    list-style: none;
+    counter-reset: s;
+    border-left: 1px solid var(--line);
+  }
+  ol.steps li {
+    counter-increment: s;
+    padding: 0.45rem 0 0.45rem 1.1rem;
+    font-size: 0.9rem;
+    color: var(--fg);
+  }
+  ol.steps li::before {
+    content: counter(s) ".";
+    color: var(--accent);
+    margin-right: 0.7rem;
+  }
+  code {
+    font-family: inherit;
+    background: var(--bg-code);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 0.08em 0.35em;
+    font-size: 0.88em;
+  }
+  .primitives { margin-top: 1.4rem; font-size: 0.9rem; color: var(--muted); }
+  .primitives code { color: var(--fg); }
+
+  /* honest box */
+  .honest {
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    background: var(--bg-raise);
+    padding: 1.6rem 1.5rem;
+  }
+  .honest .cols { display: grid; gap: 1.8rem; }
+  @media (min-width: 640px) { .honest .cols { grid-template-columns: 1fr 1fr; } }
+  .honest h3 {
+    font-size: 0.78rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-bottom: 0.9rem;
+  }
+  .honest .holds h3 { color: var(--fg); }
+  .honest .breaks h3 { color: var(--accent); }
+  .honest ul { list-style: none; }
+  .honest li {
+    font-size: 0.88rem;
+    color: var(--muted);
+    padding: 0.35rem 0 0.35rem 1.1rem;
+    position: relative;
+  }
+  .honest li strong { color: var(--fg); }
+  .honest .holds li::before  { content: "+"; position: absolute; left: 0; color: var(--fg); }
+  .honest .breaks li::before { content: "−"; position: absolute; left: 0; color: var(--accent); }
+  .honest .verdict {
+    margin-top: 1.6rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid var(--line);
+    color: var(--fg);
+    font-weight: 700;
+    font-size: 0.92rem;
+  }
+
+  /* footer */
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 2.6rem 0 3.4rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  footer .mit { margin-top: 0.6rem; color: var(--fg); }
+  footer .epi { margin-top: 1.4rem; font-style: italic; color: var(--faint); }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <a class="brand" href="#"><span class="glyph" aria-hidden="true">🗿</span>barrow</a>
+    <nav class="links" aria-label="Site">
+      <a href="REPO_URL#readme">Docs</a>
+      <a href="REPO_URL/blob/main/PROTOCOL.md">Protocol</a>
+      <a href="REPO_URL">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- ── hero ─────────────────────────────────────────── -->
+  <div class="hero wrap">
+    <span class="logo" role="img" aria-label="barrow logo — moai statue">🗿</span>
+    <h1>barrow</h1>
+    <p class="epigraph"><em>What is buried cannot be read.</em></p>
+    <p class="tagline">Anonymous, end-to-end-encrypted chat you SSH into — living inside a Tor onion service.</p>
+
+    <div class="cmd">
+      <pre id="install-cmd"><span class="p">$</span> pip install pynacl asyncssh python-socks PySocks
+<span class="p">$</span> python client.py you@y782hd7….onion</pre>
+      <button class="copy" id="copy-btn" aria-label="Copy install and connect commands to clipboard" hidden>copy</button>
+    </div>
+
+    <div class="cta">
+      <a class="btn primary" href="#how">Read the protocol →</a>
+      <a class="btn ghost" href="REPO_URL">★ Star on GitHub</a>
+    </div>
+  </div>
+
+  <!-- ── pitch ────────────────────────────────────────── -->
+  <section>
+    <div class="wrap">
+      <div class="pitch">
+        <div>
+          <b>No signup.</b>
+          <p>No email, no phone, no password. Your ed25519 keypair is your identity.</p>
+        </div>
+        <div>
+          <b>The relay can’t read you.</b>
+          <p>Messages are end-to-end encrypted; the server stores and forwards only ciphertext it has no key to open.</p>
+        </div>
+        <div>
+          <b>Underground.</b>
+          <p>Reachable only as a Tor onion service — no public IP, no DNS.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── how it works ─────────────────────────────────── -->
+  <section id="how">
+    <div class="wrap">
+      <h2>How it works</h2>
+      <p class="lead">You authenticate with the same ed25519 SSH key you may already have. That one key does three jobs: it logs you in, it signs your messages, and — converted to a Curve25519 key — it decrypts them. Before a message leaves your machine, the client picks a random key, locks the message with it once, then seals a copy of that key to each recipient’s public key. The relay sees sealed boxes and nothing else.</p>
+      <ol class="steps">
+        <li>pick a random content key <code>K</code></li>
+        <li>encrypt the message body once with <code>K</code></li>
+        <li>seal <code>K</code> to each recipient’s public key</li>
+        <li>sign the whole envelope with your ed25519 key</li>
+      </ol>
+      <p class="primitives dim">Under the hood: <code>XSalsa20-Poly1305</code> for the body, <code>SealedBox</code> for the per-recipient key wrap, <code>ed25519</code> for signatures. Standard primitives, nothing bespoke.</p>
+      <p style="margin-top:1.2rem"><a href="REPO_URL/blob/main/PROTOCOL.md">Full wire format → PROTOCOL.md</a></p>
+    </div>
+  </section>
+
+  <!-- ── why tor ──────────────────────────────────────── -->
+  <section>
+    <div class="wrap">
+      <h2>Why Tor</h2>
+      <p>The relay has no address to seize, block, or geolocate, and your connection is hidden from your network. Tor hides where you are; it does not hide that two identities are talking — the relay still sees who messages whom, and when.</p>
+    </div>
+  </section>
+
+  <!-- ── simple on purpose ────────────────────────────── -->
+  <section>
+    <div class="wrap">
+      <h2>Simple on purpose</h2>
+      <p>The client is one small, readable file. No app store, no telemetry, no account system to breach. If you can read Python, you can audit the thing that protects you. Fork it, trim it, or write your own client — barrow is a documented protocol first and an app second.</p>
+    </div>
+  </section>
+
+  <!-- ── honest box ───────────────────────────────────── -->
+  <section id="threat-model">
+    <div class="wrap">
+      <h2>What barrow is — and isn’t</h2>
+      <div class="honest">
+        <div class="cols">
+          <div class="holds">
+            <h3>Holds</h3>
+            <ul>
+              <li>The relay cannot read message contents — it holds no keys.</li>
+              <li>Messages are authenticated and integrity-protected by the sender’s signature.</li>
+              <li>Anyone can run their own client; the relay can’t force plaintext out of you.</li>
+            </ul>
+          </div>
+          <div class="breaks">
+            <h3>Does not hold — do not assume otherwise</h3>
+            <ul>
+              <li>You learn recipients’ keys <strong>from the relay</strong>, so a hostile relay could substitute keys and MITM you. Verify fingerprints out of band. The app can’t do it for you.</li>
+              <li><strong>No forward secrecy:</strong> if a long-term key leaks later, stored ciphertext it could open is exposed.</li>
+              <li><strong>Metadata</strong> (who, when, to whom, message sizes, who’s online) is visible to the relay. Tor hides your location, not this.</li>
+              <li>The relay enforces envelope <strong>shape</strong>, not that a client encrypted honestly. Confidentiality assumes every participant runs an honest client.</li>
+            </ul>
+          </div>
+        </div>
+        <p class="verdict">A solid small-trusted-group system, not a drop-in Signal.</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><a href="REPO_URL">REPO_URL</a></p>
+    <p class="mit">MIT — don’t trust it, read it.</p>
+    <p class="epi"><em>What is buried cannot be read.</em></p>
+  </div>
+</footer>
+
+<script>
+  /* Progressive enhancement: the copy button is hidden until JS runs,
+     so a no-JS page shows no dead control. */
+  (function () {
+    var btn = document.getElementById("copy-btn");
+    if (!btn || !navigator.clipboard) return;
+    btn.hidden = false;
+    var text = "pip install pynacl asyncssh python-socks PySocks\npython client.py you@y782hd7….onion";
+    btn.addEventListener("click", function () {
+      navigator.clipboard.writeText(text).then(function () {
+        btn.textContent = "copied";
+        setTimeout(function () { btn.textContent = "copy"; }, 1500);
+      }).catch(function () {
+        btn.textContent = "failed";
+        setTimeout(function () { btn.textContent = "copy"; }, 1500);
+      });
+    });
+  })();
+</script>
+
+</body>
+</html>
