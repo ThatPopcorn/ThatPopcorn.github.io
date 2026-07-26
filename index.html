@@ -28,6 +28,13 @@
      message can never collide with the logo — see .footer below. */
   --logo-h:   clamp(30px, 6.6vmin, 82px);
   --footer-h: clamp(42px, 8.6vmin, 100px);
+
+  /* Outline for a WHITE logo.png so it reads on the white card.
+     Scales with the logo itself, so it doesn't go spindly on a 4K screen.
+     Turn the whole thing off by setting --logo-ink to transparent. */
+  --logo-ink:  rgba(0,0,0,.85);
+  --logo-edge: clamp(0.8px, 0.16vmin, 2.4px);   /* tight, crisp ring   */
+  --logo-halo: clamp(2.5px, 0.5vmin, 7px);      /* soft outward fade   */
 }
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -156,6 +163,16 @@ textarea:focus,input[type=text]:focus{border-color:var(--red);border-left-color:
   height:var(--logo-h);width:auto;max-width:34%;
   object-fit:contain;object-position:left center;
   display:block;flex:none;
+
+  /* drop-shadow reads the PNG's alpha channel, so this traces the logo's
+     real silhouette rather than its bounding box. Two layers: a tight ring
+     that defines the edge, then a wider blur that fades out behind it.
+     Note these CHAIN — the second filter blurs the output of the first,
+     so the halo builds on the ring and the two darken each other. Tune
+     --logo-ink down if the pair comes out heavier than you want. */
+  filter:
+    drop-shadow(0 0 var(--logo-edge) var(--logo-ink))
+    drop-shadow(0 0 var(--logo-halo) var(--logo-ink));
 }
 #logo.missing{visibility:hidden}           /* hidden, but still holds its row height */
 #from{
