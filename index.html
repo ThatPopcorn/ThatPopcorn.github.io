@@ -1,385 +1,448 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-AU">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="barrow — anonymous, end-to-end-encrypted chat you SSH into, living inside a Tor onion service.">
-<meta name="color-scheme" content="dark">
-<title>barrow — what is buried cannot be read</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pool Notice Board</title>
+<meta name="theme-color" content="#E4002B">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+
 <style>
-  /* ── tokens ─────────────────────────────────────────── */
-  :root {
-    --bg:        #0b0b0c;
-    --bg-raise:  #101012;
-    --bg-code:   #131316;
-    --fg:        #e6e6e6;
-    --muted:     #8a8a8a;
-    --faint:     #55555a;
-    --line:      #232327;
-    --accent:    #c2703d;          /* dim ember — the one accent */
-    --accent-hi: #d98a54;
-    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-    --max: 44rem;
-  }
+/* ============================================================
+   PALETTE — approximations of lifeguard red/yellow, not official
+   brand hex. Replace these if you have your centre's real spec.
+   ============================================================ */
+:root{
+  --red:      #E4002B;
+  --yellow:   #FFD400;
+  --ink:      #0B0B0B;
+  --paper:    #FFFFFF;
 
-  /* ── reset / base ───────────────────────────────────── */
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
-  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
-  body {
-    background: var(--bg);
-    color: var(--fg);
-    font-family: var(--mono);
-    font-size: 15px;
-    line-height: 1.65;
-    -webkit-font-smoothing: antialiased;
-    /* faint grain via layered radial dots — no images, no requests */
-    background-image: radial-gradient(rgba(255,255,255,0.015) 1px, transparent 1px);
-    background-size: 3px 3px;
-  }
-  ::selection { background: var(--accent); color: var(--bg); }
+  --frame:    clamp(16px, 3.8vmin, 58px);   /* thickness of the red/yellow border */
+  --radius:   clamp(10px, 2.2vmin, 28px);
 
-  a { color: var(--accent); text-decoration: none; }
-  a:hover { color: var(--accent-hi); text-decoration: underline; text-underline-offset: 3px; }
-  a:focus-visible,
-  button:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 3px;
-    border-radius: 2px;
-  }
+  /* Footer geometry. These two values are the whole reason the
+     message can never collide with the logo — see .footer below. */
+  --logo-h:   clamp(30px, 6.6vmin, 82px);
+  --footer-h: clamp(42px, 8.6vmin, 100px);
+}
 
-  .wrap { max-width: var(--max); margin: 0 auto; padding: 0 1.25rem; }
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  /* 06 · Static flag — red over yellow, no motion. */
+  background:linear-gradient(180deg, var(--red) 0 50%, var(--yellow) 50% 100%);
+  font-family:"Barlow Condensed","Oswald","Arial Narrow",sans-serif;
+  color:var(--ink);
+  overflow:hidden;
+  -webkit-tap-highlight-color:transparent;
+}
 
-  /* ── top bar ────────────────────────────────────────── */
-  header.top {
-    border-bottom: 1px solid var(--line);
-    position: sticky; top: 0;
-    background: rgba(11,11,12,0.92);
-    backdrop-filter: blur(4px);
-    z-index: 10;
-  }
-  .top-inner {
-    max-width: var(--max); margin: 0 auto; padding: 0.7rem 1.25rem;
-    display: flex; align-items: baseline; justify-content: space-between;
-  }
-  .brand { color: var(--fg); font-weight: 700; letter-spacing: 0.02em; }
-  .brand:hover { color: var(--fg); text-decoration: none; }
-  .brand .glyph { font-weight: 400; margin-right: 0.45rem; }
-  nav.links a { color: var(--muted); margin-left: 1.4rem; font-size: 0.86rem; }
-  nav.links a:hover { color: var(--accent-hi); }
+.card{
+  position:fixed;inset:var(--frame);z-index:1;
+  background:var(--paper);
+  border-radius:var(--radius);
+  box-shadow:0 0 0 2px rgba(0,0,0,.12), 0 1.2vmin 3.6vmin rgba(60,0,10,.30);
+  overflow:hidden;
+  display:grid;
+}
 
-  /* ── hero ───────────────────────────────────────────── */
-  .hero { text-align: center; padding: 5.5rem 0 4.5rem; }
-  .hero .logo {
-    font-size: clamp(4.5rem, 14vw, 7rem);
-    line-height: 1;
-    display: block;
-    filter: grayscale(0.25);
-    text-shadow: 0 18px 60px rgba(194,112,61,0.18);
-  }
-  .hero h1 {
-    font-size: clamp(2rem, 6vw, 2.75rem);
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    margin-top: 1.2rem;
-  }
-  .hero .epigraph {
-    font-style: italic;
-    color: var(--muted);
-    margin-top: 0.5rem;
-  }
-  .hero .tagline {
-    margin: 1.6rem auto 0;
-    max-width: 34rem;
-    font-weight: 700;
-    color: var(--fg);
-  }
+/* ============================ SETUP ============================ */
+#setup{
+  padding:clamp(20px,4vmin,56px);
+  display:grid;grid-template-rows:auto 1fr auto;
+  gap:clamp(14px,2.4vmin,30px);
+  max-width:1100px;width:100%;margin:0 auto;
+}
+.brandrow{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{
+  font-family:"Anton",sans-serif;font-size:clamp(18px,2.9vmin,32px);
+  letter-spacing:.06em;text-transform:uppercase;line-height:1;
+}
+.brand span{color:var(--red)}
+.steps{display:flex;gap:8px;align-items:center}
+.pip{width:clamp(26px,4vmin,44px);height:6px;border-radius:99px;background:#E6E6E6;transition:background .25s}
+.pip.on{background:var(--red)}
+.pip.done{background:var(--yellow)}
 
-  /* command block */
-  .cmd {
-    position: relative;
-    margin: 2.2rem auto 0;
-    max-width: 36rem;
-    text-align: left;
-    background: var(--bg-code);
-    border: 1px solid var(--line);
-    border-radius: 6px;
-    padding: 1rem 3.2rem 1rem 1.1rem;
-    overflow-x: auto;
-  }
-  .cmd pre { font-family: inherit; font-size: 0.86rem; line-height: 1.8; }
-  .cmd .p { color: var(--accent); user-select: none; }
-  .cmd .copy {
-    position: absolute; top: 0.6rem; right: 0.6rem;
-    background: transparent;
-    border: 1px solid var(--line);
-    border-radius: 4px;
-    color: var(--muted);
-    font-family: inherit;
-    font-size: 0.72rem;
-    padding: 0.3rem 0.55rem;
-    cursor: pointer;
-  }
-  .cmd .copy:hover { color: var(--fg); border-color: var(--faint); }
+.pane{display:none;align-content:start;gap:clamp(10px,1.8vmin,20px)}
+.pane.active{display:grid;animation:rise .3s cubic-bezier(.2,.8,.3,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 
-  .cta {
-    margin-top: 1.9rem;
-    display: flex; gap: 0.9rem; justify-content: center; flex-wrap: wrap;
-  }
-  .btn {
-    display: inline-block;
-    padding: 0.6rem 1.15rem;
-    border-radius: 4px;
-    font-size: 0.88rem;
-    border: 1px solid var(--line);
-  }
-  .btn.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 700; }
-  .btn.primary:hover { background: var(--accent-hi); border-color: var(--accent-hi); color: var(--bg); text-decoration: none; }
-  .btn.ghost { color: var(--fg); }
-  .btn.ghost:hover { border-color: var(--faint); color: var(--fg); text-decoration: none; }
+label.q{
+  font-family:"Anton",sans-serif;font-size:clamp(26px,5.6vmin,62px);
+  line-height:1.02;text-transform:uppercase;
+}
+label.q em{color:var(--red);font-style:normal}
+.hint{font-size:clamp(14px,2vmin,20px);font-weight:500;color:#6A6A6A;letter-spacing:.02em}
+.hint.warn{color:#C25E00}
+.hint.over{color:var(--red);font-weight:700}
 
-  /* ── sections ───────────────────────────────────────── */
-  section { padding: 3.4rem 0; border-top: 1px solid var(--line); }
-  h2 {
-    font-size: 0.82rem;
-    font-weight: 700;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 1.6rem;
-  }
-  h2::before { content: "// "; color: var(--faint); }
-  p { color: var(--fg); }
-  .dim { color: var(--muted); }
+textarea,input[type=text]{
+  width:100%;font-family:"Anton",sans-serif;
+  font-size:clamp(22px,4.4vmin,46px);line-height:1.15;
+  color:var(--ink);background:#F6F6F6;
+  border:3px solid #E2E2E2;border-left:10px solid var(--yellow);
+  border-radius:10px;padding:clamp(12px,2vmin,20px);
+  outline:none;resize:none;transition:border-color .18s,background .18s;
+}
+textarea{min-height:clamp(120px,24vmin,260px)}
+textarea:focus,input[type=text]:focus{border-color:var(--red);border-left-color:var(--red);background:#fff}
+::placeholder{color:#BFBFBF}
 
-  /* pitch */
-  .pitch { display: grid; gap: 1.5rem; }
-  .pitch b { display: block; color: var(--fg); }
-  .pitch p { color: var(--muted); font-size: 0.92rem; }
-  @media (min-width: 640px) { .pitch { grid-template-columns: 1fr 1fr 1fr; gap: 2rem; } }
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{
+  font-family:"Barlow Condensed",sans-serif;font-weight:700;
+  font-size:clamp(13px,1.9vmin,18px);text-transform:uppercase;letter-spacing:.08em;
+  padding:.5em 1em;border-radius:99px;border:2px solid #E2E2E2;background:#fff;color:#555;
+  cursor:pointer;transition:.16s;
+}
+.chip:hover{border-color:var(--red);color:var(--red);transform:translateY(-1px)}
 
-  /* how it works */
-  #how p.lead { color: var(--fg); max-width: 42rem; }
-  ol.steps {
-    margin: 1.8rem 0;
-    list-style: none;
-    counter-reset: s;
-    border-left: 1px solid var(--line);
-  }
-  ol.steps li {
-    counter-increment: s;
-    padding: 0.45rem 0 0.45rem 1.1rem;
-    font-size: 0.9rem;
-    color: var(--fg);
-  }
-  ol.steps li::before {
-    content: counter(s) ".";
-    color: var(--accent);
-    margin-right: 0.7rem;
-  }
-  code {
-    font-family: inherit;
-    background: var(--bg-code);
-    border: 1px solid var(--line);
-    border-radius: 3px;
-    padding: 0.08em 0.35em;
-    font-size: 0.88em;
-  }
-  .primitives { margin-top: 1.4rem; font-size: 0.9rem; color: var(--muted); }
-  .primitives code { color: var(--fg); }
+.actions{display:flex;gap:12px;align-items:center;justify-content:flex-end}
+.btn{
+  font-family:"Anton",sans-serif;text-transform:uppercase;letter-spacing:.07em;
+  font-size:clamp(16px,2.6vmin,26px);padding:.55em 1.4em;
+  border:none;border-radius:99px;cursor:pointer;
+  transition:transform .14s,box-shadow .14s;
+}
+.btn.primary{background:var(--red);color:#fff;box-shadow:0 6px 0 #9E0020}
+.btn.primary:hover{transform:translateY(-2px);box-shadow:0 8px 0 #9E0020}
+.btn.primary:active{transform:translateY(3px);box-shadow:0 2px 0 #9E0020}
+.btn.ghost{background:transparent;color:#8A8A8A;box-shadow:inset 0 0 0 3px #E2E2E2}
+.btn.ghost:hover{color:var(--ink);box-shadow:inset 0 0 0 3px #BDBDBD}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none}
 
-  /* honest box */
-  .honest {
-    border: 1px solid var(--accent);
-    border-radius: 6px;
-    background: var(--bg-raise);
-    padding: 1.6rem 1.5rem;
-  }
-  .honest .cols { display: grid; gap: 1.8rem; }
-  @media (min-width: 640px) { .honest .cols { grid-template-columns: 1fr 1fr; } }
-  .honest h3 {
-    font-size: 0.78rem;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    margin-bottom: 0.9rem;
-  }
-  .honest .holds h3 { color: var(--fg); }
-  .honest .breaks h3 { color: var(--accent); }
-  .honest ul { list-style: none; }
-  .honest li {
-    font-size: 0.88rem;
-    color: var(--muted);
-    padding: 0.35rem 0 0.35rem 1.1rem;
-    position: relative;
-  }
-  .honest li strong { color: var(--fg); }
-  .honest .holds li::before  { content: "+"; position: absolute; left: 0; color: var(--fg); }
-  .honest .breaks li::before { content: "−"; position: absolute; left: 0; color: var(--accent); }
-  .honest .verdict {
-    margin-top: 1.6rem;
-    padding-top: 1.2rem;
-    border-top: 1px solid var(--line);
-    color: var(--fg);
-    font-weight: 700;
-    font-size: 0.92rem;
-  }
+/* ============================ DISPLAY ============================ */
+#display{
+  display:none;
+  grid-template-rows:minmax(0,1fr) auto;   /* minmax(0,1fr): the message row is
+                                              allowed to shrink. A plain "1fr"
+                                              has an automatic minimum of the
+                                              content size, which lets tall text
+                                              push the footer off-screen. */
+  padding:clamp(14px,3vmin,44px);
+  height:100%;user-select:none;
+}
+#display.active{display:grid}
 
-  /* footer */
-  footer {
-    border-top: 1px solid var(--line);
-    padding: 2.6rem 0 3.4rem;
-    text-align: center;
-    font-size: 0.85rem;
-    color: var(--muted);
-  }
-  footer .mit { margin-top: 0.6rem; color: var(--fg); }
-  footer .epi { margin-top: 1.4rem; font-style: italic; color: var(--faint); }
+#msgbox{
+  position:relative;min-height:0;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;                         /* hard backstop: if the fit were ever
+                                              wrong, text clips instead of drawing
+                                              over the logo. */
+}
+#msg{
+  width:100%;
+  font-family:"Anton",sans-serif;line-height:1.03;
+  text-align:center;white-space:pre-wrap;overflow-wrap:break-word;
+  font-size:16px;                           /* JS overwrites this */
+}
+
+.footer{
+  flex:none;                                /* never shrinks */
+  min-height:var(--footer-h);               /* space is reserved whether or not
+                                               logo.png exists or loads */
+  display:flex;align-items:center;gap:clamp(10px,1.8vmin,22px);
+  margin-top:clamp(8px,1.6vmin,20px);
+  padding-top:clamp(8px,1.4vmin,16px);
+  border-top:3px solid #EDEDED;
+}
+#logo{
+  height:var(--logo-h);width:auto;max-width:34%;
+  object-fit:contain;object-position:left center;
+  display:block;flex:none;
+}
+#logo.missing{visibility:hidden}           /* hidden, but still holds its row height */
+#from{
+  font-family:"Barlow Condensed",sans-serif;font-weight:600;
+  font-size:clamp(15px,3vmin,38px);letter-spacing:.03em;line-height:1;
+  color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;
+}
+
+#tools{
+  position:fixed;z-index:3;right:calc(var(--frame) + 14px);bottom:calc(var(--frame) + 14px);
+  display:flex;gap:8px;transition:opacity .5s;
+}
+#tools.idle{opacity:0;pointer-events:none}
+.tool{
+  font-family:"Barlow Condensed",sans-serif;font-weight:700;text-transform:uppercase;
+  letter-spacing:.09em;font-size:14px;color:#8A8A8A;background:#fff;
+  border:2px solid #E4E4E4;border-radius:99px;padding:.45em 1em;cursor:pointer;transition:.16s;
+}
+.tool:hover{color:var(--red);border-color:var(--red)}
+
+@media (max-width:640px){
+  .brandrow{flex-direction:column;align-items:flex-start;gap:10px}
+}
 </style>
 </head>
+
 <body>
 
-<header class="top">
-  <div class="top-inner">
-    <a class="brand" href="#"><span class="glyph" aria-hidden="true">🗿</span>barrow</a>
-    <nav class="links" aria-label="Site">
-      <a href="https://github.com/ThatPopcorn/Barrow/#readme">Docs</a>
-      <a href="https://github.com/ThatPopcorn/Barrow/blob/main/PROTOCOL.md">Protocol</a>
-      <a href="https://github.com/ThatPopcorn/Barrow">GitHub</a>
-    </nav>
-  </div>
-</header>
+<main class="card">
 
-<main>
-
-  <!-- ── hero ─────────────────────────────────────────── -->
-  <div class="hero wrap">
-    <span class="logo" role="img" aria-label="barrow logo — moai statue">🗿</span>
-    <h1>barrow</h1>
-    <p class="epigraph"><em>What is buried cannot be read.</em></p>
-    <p class="tagline">Anonymous, end-to-end-encrypted chat you SSH into — living inside a Tor onion service.</p>
-
-    <div class="cmd">
-      <pre id="install-cmd"><span class="p">$</span> pip install pynacl asyncssh python-socks PySocks
-<span class="p">$</span> python client.py you@y782hd7….onion</pre>
-      <button class="copy" id="copy-btn" aria-label="Copy install and connect commands to clipboard" hidden>copy</button>
-    </div>
-
-    <div class="cta">
-      <a class="btn primary" href="#how">Read the protocol →</a>
-      <a class="btn ghost" href="https://github.com/ThatPopcorn/Barrow">★ Star on GitHub</a>
-    </div>
-  </div>
-
-  <!-- ── pitch ────────────────────────────────────────── -->
-  <section>
-    <div class="wrap">
-      <div class="pitch">
-        <div>
-          <b>No signup.</b>
-          <p>No email, no phone, no password. Your ed25519 keypair is your identity.</p>
-        </div>
-        <div>
-          <b>The relay can’t read you.</b>
-          <p>Messages are end-to-end encrypted; the server stores and forwards only ciphertext it has no key to open.</p>
-        </div>
-        <div>
-          <b>Underground.</b>
-          <p>Reachable only as a Tor onion service — no public IP, no DNS.</p>
-        </div>
+  <section id="setup">
+    <div class="brandrow">
+      <div class="brand">Pool <span>Notice</span></div>
+      <div class="steps" aria-hidden="true">
+        <div class="pip on" id="pip1"></div>
+        <div class="pip" id="pip2"></div>
       </div>
     </div>
-  </section>
 
-  <!-- ── how it works ─────────────────────────────────── -->
-  <section id="how">
-    <div class="wrap">
-      <h2>How it works</h2>
-      <p class="lead">You authenticate with the same ed25519 SSH key you may already have. That one key does three jobs: it logs you in, it signs your messages, and — converted to a Curve25519 key — it decrypts them. Before a message leaves your machine, the client picks a random key, locks the message with it once, then seals a copy of that key to each recipient’s public key. The relay sees sealed boxes and nothing else.</p>
-      <ol class="steps">
-        <li>pick a random content key <code>K</code></li>
-        <li>encrypt the message body once with <code>K</code></li>
-        <li>seal <code>K</code> to each recipient’s public key</li>
-        <li>sign the whole envelope with your ed25519 key</li>
-      </ol>
-      <p class="primitives dim">Under the hood: <code>XSalsa20-Poly1305</code> for the body, <code>SealedBox</code> for the per-recipient key wrap, <code>ed25519</code> for signatures. Standard primitives, nothing bespoke.</p>
-      <p style="margin-top:1.2rem"><a href="https://github.com/ThatPopcorn/Barrow/blob/main/PROTOCOL.md">Full wire format → PROTOCOL.md</a></p>
-    </div>
-  </section>
-
-  <!-- ── why tor ──────────────────────────────────────── -->
-  <section>
-    <div class="wrap">
-      <h2>Why Tor</h2>
-      <p>The relay has no address to seize, block, or geolocate, and your connection is hidden from your network. Tor hides where you are; it does not hide that two identities are talking — the relay still sees who messages whom, and when.</p>
-    </div>
-  </section>
-
-  <!-- ── simple on purpose ────────────────────────────── -->
-  <section>
-    <div class="wrap">
-      <h2>Simple on purpose</h2>
-      <p>The client is one small, readable file. No app store, no telemetry, no account system to breach. If you can read Python, you can audit the thing that protects you. Fork it, trim it, or write your own client — barrow is a documented protocol first and an app second.</p>
-    </div>
-  </section>
-
-  <!-- ── honest box ───────────────────────────────────── -->
-  <section id="threat-model">
-    <div class="wrap">
-      <h2>What barrow is — and isn’t</h2>
-      <div class="honest">
-        <div class="cols">
-          <div class="holds">
-            <h3>Holds</h3>
-            <ul>
-              <li>The relay cannot read message contents — it holds no keys.</li>
-              <li>Messages are authenticated and integrity-protected by the sender’s signature.</li>
-              <li>Anyone can run their own client; the relay can’t force plaintext out of you.</li>
-            </ul>
-          </div>
-          <div class="breaks">
-            <h3>Does not hold — do not assume otherwise</h3>
-            <ul>
-              <li>You learn recipients’ keys <strong>from the relay</strong>, so a hostile relay could substitute keys and MITM you. Verify fingerprints out of band. The app can’t do it for you.</li>
-              <li><strong>No forward secrecy:</strong> if a long-term key leaks later, stored ciphertext it could open is exposed.</li>
-              <li><strong>Metadata</strong> (who, when, to whom, message sizes, who’s online) is visible to the relay. Tor hides your location, not this.</li>
-              <li>The relay enforces envelope <strong>shape</strong>, not that a client encrypted honestly. Confidentiality assumes every participant runs an honest client.</li>
-            </ul>
-          </div>
-        </div>
-        <p class="verdict">A solid small-trusted-group system, not a drop-in Signal.</p>
+    <div>
+      <div class="pane active" id="pane1">
+        <label class="q" for="in-msg">What's the <em>notice</em>?</label>
+        <div class="hint" id="counter">This is the big text in the middle. Line breaks are kept.</div>
+        <textarea id="in-msg" placeholder="Pool closed for cleaning" autocomplete="off" spellcheck="true"></textarea>
+        <div class="chips" id="chips"></div>
       </div>
+
+      <div class="pane" id="pane2">
+        <label class="q" for="in-from">Who's it <em>from</em>?</label>
+        <div class="hint">Small text beside the logo. Leave blank to hide it.</div>
+        <input id="in-from" type="text" maxlength="42" placeholder="Lifeguards" autocomplete="off">
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn ghost" id="btn-back" style="visibility:hidden">Back</button>
+      <button class="btn primary" id="btn-next" disabled>Next</button>
+    </div>
+  </section>
+
+  <section id="display">
+    <div id="msgbox"><div id="msg"></div></div>
+    <div class="footer">
+      <img id="logo" src="logo.png" alt="">
+      <div id="from"></div>
     </div>
   </section>
 
 </main>
 
-<footer>
-  <div class="wrap">
-    <p><a href="https://github.com/ThatPopcorn/Barrow">REPO_URL</a></p>
-    <p class="mit">MIT — don’t trust it, read it.</p>
-    <p class="epi"><em>What is buried cannot be read.</em></p>
-  </div>
-</footer>
+<div id="tools" style="display:none">
+  <button class="tool" id="t-edit">Edit</button>
+  <button class="tool" id="t-full">Full screen</button>
+</div>
 
 <script>
-  /* Progressive enhancement: the copy button is hidden until JS runs,
-     so a no-JS page shows no dead control. */
-  (function () {
-    var btn = document.getElementById("copy-btn");
-    if (!btn || !navigator.clipboard) return;
-    btn.hidden = false;
-    var text = "pip install pynacl asyncssh python-socks PySocks\npython client.py you@y782hd7….onion";
-    btn.addEventListener("click", function () {
-      navigator.clipboard.writeText(text).then(function () {
-        btn.textContent = "copied";
-        setTimeout(function () { btn.textContent = "copy"; }, 1500);
-      }).catch(function () {
-        btn.textContent = "failed";
-        setTimeout(function () { btn.textContent = "copy"; }, 1500);
-      });
-    });
-  })();
-</script>
+(function(){
+  "use strict";
+  var $ = function(id){ return document.getElementById(id); };
 
+  var PRESETS = [
+    "Pool closed",
+    "No diving",
+    "Lane 4 closed",
+    "Squad training in progress",
+    "Back in 10 minutes",
+    "Slippery when wet"
+  ];
+
+  var SOFT_LIMIT = 90;   // past this the text starts getting small
+  var HARD_LIMIT = 200;  // past this it will be hard to read from the far end
+
+  /* ---------------------------------------------------------------
+     STEP FLOW — state lives in the query string, not a second file.
+     GitHub Pages has no server to hand state between pages, so
+     accepting rewrites the URL to ?m=...&f=... . That makes the
+     finished notice a bookmarkable link you can boot a screen into.
+     --------------------------------------------------------------- */
+  var step = 1;
+
+  function setStep(n){
+    step = n;
+    $("pane1").classList.toggle("active", n === 1);
+    $("pane2").classList.toggle("active", n === 2);
+    $("pip1").className = "pip " + (n === 1 ? "on" : "done");
+    $("pip2").className = "pip " + (n === 2 ? "on" : "");
+    $("btn-back").style.visibility = n === 2 ? "visible" : "hidden";
+    $("btn-next").textContent = n === 2 ? "Accept" : "Next";
+    validate();
+    setTimeout(function(){ (n === 1 ? $("in-msg") : $("in-from")).focus(); }, 60);
+  }
+
+  function validate(){
+    var v = $("in-msg").value;
+    var n = v.trim().length;
+    var c = $("counter");
+    if (n === 0){
+      c.className = "hint";
+      c.textContent = "This is the big text in the middle. Line breaks are kept.";
+    } else if (n > HARD_LIMIT){
+      c.className = "hint over";
+      c.textContent = n + " characters — too long to read from across the pool. Trim it.";
+    } else if (n > SOFT_LIMIT){
+      c.className = "hint warn";
+      c.textContent = n + " characters — this will render fairly small.";
+    } else {
+      c.className = "hint";
+      c.textContent = n + " characters — good size.";
+    }
+    $("btn-next").disabled = (step === 1 && n === 0);
+  }
+
+  $("in-msg").addEventListener("input", validate);
+  $("in-msg").addEventListener("keydown", function(e){
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)){ e.preventDefault(); next(); }
+  });
+  $("in-from").addEventListener("keydown", function(e){
+    if (e.key === "Enter"){ e.preventDefault(); next(); }
+  });
+  $("btn-next").addEventListener("click", next);
+  $("btn-back").addEventListener("click", function(){ setStep(1); });
+
+  function next(){
+    if (step === 1){
+      if ($("in-msg").value.trim() === "") return;
+      setStep(2);
+    } else {
+      show($("in-msg").value.trim(), $("in-from").value.trim(), true);
+    }
+  }
+
+  PRESETS.forEach(function(text){
+    var b = document.createElement("button");
+    b.className = "chip"; b.type = "button"; b.textContent = text;
+    b.addEventListener("click", function(){ $("in-msg").value = text; validate(); $("in-msg").focus(); });
+    $("chips").appendChild(b);
+  });
+
+  /* Accepts "Bryan", "-Bryan" or "— Bryan"; always renders one dash. */
+  function formatFrom(raw){
+    if (!raw) return "";
+    return "\u2014 " + raw.replace(/^[\s\-\u2013\u2014]+/, "");
+  }
+
+  /* ---------------------------------------------------------------
+     TEXT FITTING
+     Binary search on font-size. Valid because growing the font can
+     never reduce the height required, so "does it fit" is monotonic
+     even though line wrapping changes in discrete jumps.
+     The box it measures against is the grid row ABOVE the footer,
+     so a fit that succeeds cannot physically reach the logo.
+     --------------------------------------------------------------- */
+  var fitting = false;
+
+  function refit(){
+    if (fitting) return;                       // guard against observer re-entry
+    fitting = true;
+
+    var el = $("msg"), box = $("msgbox");
+    var maxH = box.clientHeight, maxW = box.clientWidth;
+    if (maxH > 0 && maxW > 0){
+      var lo = 10, hi = maxH, best = lo;
+      for (var i = 0; i < 15; i++){
+        var mid = (lo + hi) / 2;
+        el.style.fontSize = mid + "px";
+        if (el.scrollHeight <= maxH && el.scrollWidth <= maxW + 1){ best = mid; lo = mid; }
+        else { hi = mid; }
+      }
+      el.style.fontSize = (Math.floor(best * 100) / 100) + "px";
+    }
+    fitting = false;
+  }
+
+  /* ---------------------------------------------------------------
+     SHOW
+     --------------------------------------------------------------- */
+  function show(message, from, writeUrl){
+    $("msg").textContent = message;
+    var f = formatFrom(from);
+    $("from").textContent = f;
+    $("from").style.display = f ? "block" : "none";
+    document.title = message.replace(/\s+/g, " ").slice(0, 60);
+
+    $("setup").style.display = "none";
+    $("display").classList.add("active");
+    $("tools").style.display = "flex";
+
+    if (writeUrl){
+      var q = "?m=" + encodeURIComponent(message) + (from ? "&f=" + encodeURIComponent(from) : "");
+      try { history.replaceState(null, "", q); } catch (err) { /* sandboxed preview */ }
+    }
+
+    refit();
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(refit);
+    idleWatch();
+  }
+
+  function edit(){
+    $("display").classList.remove("active");
+    $("setup").style.display = "grid";
+    $("tools").style.display = "none";
+    document.title = "Pool Notice Board";
+    try { history.replaceState(null, "", location.pathname); } catch (err) {}
+    setStep(1);
+  }
+
+  /* ---------------------------------------------------------------
+     REFIT TRIGGERS
+     ResizeObserver on the message box catches everything that changes
+     the available space: window resize, rotation, entering full screen,
+     AND the footer changing height when the logo loads. A window
+     resize listener alone misses that last one.
+     --------------------------------------------------------------- */
+  if (window.ResizeObserver){
+    var rt = null;
+    new ResizeObserver(function(){
+      clearTimeout(rt);
+      rt = setTimeout(refit, 60);
+    }).observe($("msgbox"));
+  } else {
+    window.addEventListener("resize", refit);
+    window.addEventListener("orientationchange", refit);
+  }
+
+  $("logo").addEventListener("load", refit);
+  $("logo").addEventListener("error", function(){
+    this.classList.add("missing");   // keeps its space, shows nothing
+    refit();
+  });
+
+  /* ---------------------------------------------------------------
+     KIOSK CONTROLS
+     --------------------------------------------------------------- */
+  $("t-edit").addEventListener("click", edit);
+  $("t-full").addEventListener("click", function(){
+    if (!document.fullscreenElement){
+      if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+    } else if (document.exitFullscreen){
+      document.exitFullscreen();
+    }
+  });
+  document.addEventListener("keydown", function(e){
+    if (!$("display").classList.contains("active")) return;
+    if (e.key === "Escape" || e.key.toLowerCase() === "e") edit();
+    if (e.key.toLowerCase() === "f") $("t-full").click();
+  });
+
+  var idleTimer = null;
+  function idleWatch(){
+    clearTimeout(idleTimer);
+    $("tools").classList.remove("idle");
+    idleTimer = setTimeout(function(){ $("tools").classList.add("idle"); }, 4000);
+  }
+  ["mousemove","touchstart","keydown"].forEach(function(ev){
+    document.addEventListener(ev, function(){
+      if ($("display").classList.contains("active")) idleWatch();
+    }, {passive:true});
+  });
+
+  /* ---------------------------------------------------------------
+     BOOT
+     --------------------------------------------------------------- */
+  var params = new URLSearchParams(location.search);
+  var m = params.get("m");
+  if (m && m.trim()) show(m, params.get("f") || "", false);
+  else setStep(1);
+})();
+</script>
 </body>
 </html>
